@@ -49,7 +49,7 @@ resource connectionString 'Microsoft.Web/sites/config@2022-03-01' = {
   name: 'connectionstrings'
   parent: webSite
   properties: {
-    LevelUpUniversityDatabase: {
+    SchoolContext: {
       type: 'SQLAzure'
       value: 'Data Source=tcp:${sqlServer.properties.fullyQualifiedDomainName},1433;Initial Catalog=${databaseName};User Id=${sqlAdminLogin}@${sqlServer.properties.fullyQualifiedDomainName};Password=${sqlAdminPassword};'
     }
@@ -74,7 +74,7 @@ resource connectionString 'Microsoft.Web/sites/config@2022-03-01' = {
   }
 } */
 
-resource appInsights_webApp 'Microsoft.Insights/components@2020-02-02' = {
+/* resource appInsights_webApp 'Microsoft.Insights/components@2020-02-02' = {
   name: 'AppInsights-${webSite.name}'
   location: location
   kind: 'web'
@@ -85,7 +85,7 @@ resource appInsights_webApp 'Microsoft.Insights/components@2020-02-02' = {
   properties: {
     Application_Type: 'web'
   }
-}
+} */
 
 
 // ================== Createing SQL Azure Db =========================
