@@ -1,0 +1,147 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.8.9.13224",
+      "templateHash": "6671193813371411499"
+    }
+  },
+  "parameters": {
+    "sqlAdminLogin": {
+      "type": "string",
+      "metadata": {
+        "description": "Sql admin login"
+      }
+    },
+    "sqlAdminPassword": {
+      "type": "secureString",
+      "metadata": {
+        "description": "Sql Admin Password"
+      }
+    },
+    "siteName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of Azure web app"
+      }
+    },
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]",
+      "metadata": {
+        "description": "Location for all resources"
+      }
+    }
+  },
+  "variables": {
+    "hostingPlaneName": "[format('{0}-serviceplan', parameters('siteName'))]",
+    "uniqueSiteName": "[format('{0}-{1}', parameters('siteName'), uniqueString(resourceGroup().id))]",
+    "websiteName": "[format('website-{0}', variables('uniqueSiteName'))]",
+    "sqlServerName": "[format('contoso-sqlserver-{0}', uniqueString(resourceGroup().id))]",
+    "databaseName": "[format('database-{0}', variables('uniqueSiteName'))]",
+    "skuName": "F1"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Web/serverfarms",
+      "apiVersion": "2022-03-01",
+      "name": "[variables('hostingPlaneName')]",
+      "location": "[parameters('location')]",
+      "sku": {
+        "name": "[variables('skuName')]"
+      }
+    },
+    {
+      "type": "Microsoft.Web/sites",
+      "apiVersion": "2022-03-01",
+      "name": "[variables('websiteName')]",
+      "location": "[parameters('location')]",
+      "tags": {
+        "[format('hidden-related:{0}', resourceId('Microsoft.Web/serverfarms', variables('hostingPlaneName')))]": "empty",
+        "displayName": "Website"
+      },
+      "properties": {
+        "httpsOnly": true,
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlaneName'))]",
+        "clientAffinityEnabled": false,
+        "siteConfig": {
+          "netFrameworkVersion": "v6.0",
+          "ftpsState": "FtpsOnly"
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlaneName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Web/sites/config",
+      "apiVersion": "2022-03-01",
+      "name": "[format('{0}/{1}', variables('websiteName'), 'connectionstrings')]",
+      "properties": {
+        "LevelUpUniversityDatabase": {
+          "type": "SQLAzure",
+          "value": "[format('Data Source=tcp:{0},1433;Initial Catalog={1};User Id={2}@{3};Password={4};', reference(resourceId('Microsoft.Sql/servers', variables('sqlServerName'))).fullyQualifiedDomainName, variables('databaseName'), parameters('sqlAdminLogin'), reference(resourceId('Microsoft.Sql/servers', variables('sqlServerName'))).fullyQualifiedDomainName, parameters('sqlAdminPassword'))]"
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', variables('sqlServerName'))]",
+        "[resourceId('Microsoft.Web/sites', variables('websiteName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Insights/components",
+      "apiVersion": "2020-02-02",
+      "name": "[format('AppInsights-{0}', variables('websiteName'))]",
+      "location": "[parameters('location')]",
+      "kind": "web",
+      "tags": {
+        "[format('hidden-link:{0}', resourceId('Microsoft.Web/sites', variables('websiteName')))]": "Resource",
+        "displayName": "AppInsightsComponent"
+      },
+      "properties": {
+        "Application_Type": "web"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/sites', variables('websiteName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Sql/servers",
+      "apiVersion": "2021-11-01-preview",
+      "name": "[variables('sqlServerName')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "administratorLogin": "[parameters('sqlAdminLogin')]",
+        "administratorLoginPassword": "[parameters('sqlAdminPassword')]",
+        "version": "12.0"
+      }
+    },
+    {
+      "type": "Microsoft.Sql/servers/databases",
+      "apiVersion": "2021-11-01-preview",
+      "name": "[format('{0}/{1}', variables('sqlServerName'), variables('databaseName'))]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "collation": "SQL_Latin1_General_CP1_CI_AS",
+        "maxSizeBytes": 1073741824
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', variables('sqlServerName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Sql/servers/firewallRules",
+      "apiVersion": "2021-11-01-preview",
+      "name": "[format('{0}/{1}', variables('sqlServerName'), 'AllowAllWindowsAzureIps')]",
+      "properties": {
+        "startIpAddress": "0.0.0.0",
+        "endIpAddress": "0.0.0.0"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', variables('sqlServerName'))]"
+      ]
+    }
+  ]
+}
