@@ -45,4 +45,10 @@ app.UseAuthorization();
 
 app.MapRazorPages();
 
-app.Run();
+try
+{
+    app.Run();
+} catch (Exception e)
+{
+    
+}
