@@ -2,7 +2,7 @@
 ContosoUniversity
 =================
 
-First we will deploy this app to App Service
+First we will deploy this app to App Service,
 
 ## How to deploy:
 For easy deployment we created a [Bicep](https://docs.microsoft.com/en-us/azure/azure-resource-manager/bicep/overview?tabs=bicep) that will deploy all resources we want for us.
