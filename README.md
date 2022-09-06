@@ -1,3 +1,4 @@
+[![Board Status](https://dev.azure.com/ibrahimmegahed/1de28e92-1a86-4dd1-9b43-bf88248779ad/e102f73d-c77c-444c-b474-5ea5b676867b/_apis/work/boardbadge/cc48e18e-88ad-421e-a8ad-4d7a6a1e0c90)](https://dev.azure.com/ibrahimmegahed/1de28e92-1a86-4dd1-9b43-bf88248779ad/_boards/board/t/e102f73d-c77c-444c-b474-5ea5b676867b/Microsoft.RequirementCategory)
 ContosoUniversity
 =================
 
